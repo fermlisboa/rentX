@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rentx
+    ports:
+      - 3333:3333
+    volumes:
+      - .:/usr/app
+      
+    # Overrides default command so things don't shut down after the process ends.
+    # command: sleep infinity
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    # network_mode: service:db
+
+    # Uncomment the next line to use a non-root user for all processes.
+    # user: node
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally. 
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+
+
+
+#   db:
+#     image: 'bitnami/mariadb'
+#     ports:
+#       - '3306:3306'
+#     volumes:
+#       - 'mariadb_data:/bitnami/mariadb'
+#     environment:
+#       - ALLOW_EMPTY_PASSWORD=yes
+#       - MARIADB_DATABASE=node
+#       - MARIADB_USER=node
+#       - MARIADB_PASSWORD=password
+
+#   phpmyadmin:
+#     image: 'phpmyadmin'
+#     ports:
+#       - '800:80'
+#     environment:
+#       - PMA_HOST=db
+#       - PMA_USER=node
+#       - PMA_PASSWORD=password
+#       - PMA_DB=node
+# volumes:
+#   mariadb_data:
+#     driver: local
