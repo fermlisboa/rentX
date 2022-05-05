@@ -1,5 +1,6 @@
 import { parse } from 'csv-parse';
 import fs from 'fs';
+import { inject, injectable } from 'tsyringe';
 
 import { CategoriesRepository } from '../../repositories/implementations/CategoriesRepository';
 
@@ -8,8 +9,17 @@ interface IImportCategory {
   description: string;
 }
 
+@injectable()
 class ImportCategoryUseCase {
-  constructor(private categoriesRepository: CategoriesRepository) {}
+  constructor(
+    @inject('CategoriesRepository')
+    private categoriesRepository: CategoriesRepository,
+  ) {}
+  /**
+   * It reads a CSV file, parses it, and returns an array of categories
+   * @param file - Express.Multer.File - this is the file that was uploaded.
+   * @returns An array of categories
+   */
   loadCategories(file: Express.Multer.File): Promise<IImportCategory[]> {
     return new Promise((resolve, reject) => {
       const stream = fs.createReadStream(file.path);
@@ -32,13 +42,19 @@ class ImportCategoryUseCase {
         });
     });
   }
+
+  /**
+   * It loads the categories from the file, checks if they already exist in the database, and if they
+   * don't, it creates them
+   * @param file - Express.Multer.File
+   */
   async execute(file: Express.Multer.File): Promise<void> {
     const categories = await this.loadCategories(file);
     categories.map(async category => {
       const { name, description } = category;
-      const existCategory = this.categoriesRepository.findByName(name);
+      const existCategory = await this.categoriesRepository.findByName(name);
       if (!existCategory) {
-        this.categoriesRepository.create({
+        await this.categoriesRepository.create({
           name,
           description,
         });

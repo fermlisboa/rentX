@@ -1,34 +1,47 @@
-import { Specification } from '../../model/Specification';
+import { getRepository, Repository } from 'typeorm';
+
+import { Specification } from '../../entities/Specification';
 import {
   ICreateSpecificationDTO,
   ISpecificationsRepository,
 } from '../ISpecificationsRepository';
 
 class SpecificationsRepository implements ISpecificationsRepository {
-  private specifications: Specification[];
+  private repository: Repository<Specification>;
   constructor() {
-    this.specifications = [];
+    this.repository = getRepository(Specification);
   }
 
-  create({ name, description }: ICreateSpecificationDTO): void {
-    const specification = new Specification();
-    Object.assign(specification, {
-      name,
+  /**
+   * It receives an object with the name and description properties, creates a new Specification object,
+   * assigns the name and description properties to it, and pushes it to the specifications array
+   * @param {ICreateSpecificationDTO}  - ICreateSpecificationDTO
+   */
+  async create({ name, description }: ICreateSpecificationDTO): Promise<void> {
+    const specification = this.repository.create({
       description,
-      created_at: new Date(),
+      name,
     });
-
-    this.specifications.push(specification);
+    await this.repository.save(specification);
   }
 
-  list(): Specification[] {
-    return this.specifications;
+  /**
+   * It returns the list of specifications
+   * @returns The specifications array.
+   */
+  list(): Promise<Specification[]> {
+    return this.repository.find();
   }
 
-  findByName(name: string): Specification {
-    const specification = this.specifications.find(
-      specification => specification.name === name,
-    );
+  /**
+   * "Find the specification with the given name."
+   *
+   * The function takes a string as an argument and returns a Specification
+   * @param {string} name - The name of the specification you want to find.
+   * @returns The specification with the name that matches the name passed in.
+   */
+  async findByName(name: string): Promise<Specification> {
+    const specification = this.repository.findOne({ name });
     return specification;
   }
 }
